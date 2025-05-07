@@ -9,6 +9,9 @@ services:
       - ./workspace:/workspace
     depends_on:
       - mysql
+    networks:
+      dockervlan:
+        ipv4_address: 172.23.5.99
 
   mysql:
     image: mysql:latest
@@ -22,7 +25,16 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql      
+    networks:
+      dockervlan:
+        ipv4_address: 172.23.5.98
 
 volumes:
   mysql_data:
+
+
+networks:
+  dockervlan:
+    external:
+      true   
