@@ -1,21 +1,31 @@
 
+networks:
+  dockervlan:
+    external: true
+
 services:
   pa-ammar:
     build: .
     container_name: PA-Ammar
+    networks:
+      dockervlan:
+        ipv4_address: 172.23.5.99
+    ports:
+      - "2222:22"  # SSH-Port
+      - "8000:8000"  # Django-Port
     stdin_open: true
     tty: true
     volumes:
       - ./workspace:/workspace
     depends_on:
-      - mysql
-    networks:
-      dockervlan:
-        ipv4_address: 172.23.5.99
+      - pa-mysql-db
 
-  mysql:
+  pa-mysql-db:
     image: mysql:latest
     container_name: pa-mysql-db
+    networks:
+      dockervlan:
+        ipv4_address: 172.23.5.98
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -25,16 +35,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql      
-    networks:
-      dockervlan:
-        ipv4_address: 172.23.5.98
+      - mysql_data:/var/lib/mysql
 
 volumes:
   mysql_data:
-
-
-networks:
-  dockervlan:
-    external:
-      true   
