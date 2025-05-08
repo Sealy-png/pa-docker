@@ -1,33 +1,21 @@
-# Basis-Image mit Python 3.12
-FROM python:3.12
+# Verwende das offizielle Alpine-Image als Basis
+FROM alpine:latest
 
-# Aktualisierung der Paketliste und Installation von Nano, Bash, SSH
-RUN apt-get update && apt-get install -y nano bash openssh-server
-RUN apk add --no-cache openssh
+# Aktualisiere die Paketliste und installiere notwendige Pakete
+RUN apk --no-cache add bash curl python3 py3-pip openssh shadow vim nano wget
 
-# Installation von PyCharm Community Edition
-RUN apt-get install -y wget \
-    && wget https://download.jetbrains.com/python/pycharm-community-2023.1.tar.gz \
-    && tar -xzf pycharm-community-2023.1.tar.gz -C /opt/ \
-    && rm pycharm-community-2023.1.tar.gz
+# Setze das Root-Passwort (nicht empfohlen, besser über ein sicheres Geheimnis-Management)
+RUN echo "root:m2X!giqum" | chpasswd
 
-# Standard-Arbeitsverzeichnis setzen
-WORKDIR /workspace
+# Installiere die Python-Bibliotheken requests und Django
+RUN pip3 install requests django
 
-# Installation der benötigten Python-Pakete und Django Framework
-RUN pip install requests django
+# Aktiviere und starte den SSH-Dienst
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
 
-# SSH-Konfiguration
-RUN mkdir /var/run/sshd
-
-
-RUN echo "password" | passwd --stdin root
-
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_configersion: '3.8'
-
-RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
-
+# Exponiere den SSH-Port
 EXPOSE 22
 
-# Standard-Kommando setzen
-CMD ["/bin/bash"]
+# Starte den SSH-Dienst
+CMD ["/usr/sbin/sshd", "-D"]
